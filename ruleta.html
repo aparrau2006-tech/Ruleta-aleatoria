@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wooclap - Ruleta Aleatoria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+    html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 40px; }
+    header { width: 100%; background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; }
+    .brand { font-size: 26px; font-weight: 800; color: #2563eb; letter-spacing: -0.5px; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn-register { background-color: #2563eb; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .menu-icon { font-size: 24px; color: #2563eb; cursor: pointer; }
+    .breadcrumbs { margin-top: 20px; font-size: 13px; color: #64748b; text-align: center; }
+    .breadcrumbs span { color: #0f172a; font-weight: 700; }
+    .title-container { text-align: center; margin: 16px 0 24px 0; }
+    .title-container h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+    .title-container h2 { font-size: 24px; font-weight: 800; color: #2563eb; }
+    .wheel-wrapper { position: relative; width: 320px; height: 320px; margin: 10px auto 30px auto; display: flex; justify-content: center; align-items: center; }
+    canvas { width: 320px; height: 320px; border-radius: 50%; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); transition: transform 5s cubic-bezier(0.15, 0.85, 0.35, 1); }
+    .spin-center-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 5; }
+    .spin-center-btn::after { content: ''; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 16px solid #1e293b; margin-left: 4px; }
+    .pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #1e293b; z-index: 6; }
+    .options-section { width: 90%; max-width: 360px; margin: 0 auto; text-align: center; }
+    .options-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    .options-subtitle { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+    .options-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; }
+    .option-input-container { display: flex; align-items: center; gap: 8px; }
+    .option-input { flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; color: #334155; }
+    .option-input:focus { border-color: #2563eb; }
+    .btn-delete { background: #f87171; color: white; border: none; border-radius: 8px; width: 36px; height: 36px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .btn-delete:hover { background: #ef4444; }
+    .btn-add { margin-top: 10px; background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+    .btn-add:hover { background: #1d4ed8; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 100; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 300px; width: 80%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    .modal-content h3 { font-size: 18px; color: #64748b; margin-bottom: 10px; }
+    .modal-content h2 { font-size: 28px; color: #2563eb; font-weight: 800; margin-bottom: 20px; }
+    .modal-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">wooclap</div>
+    <div class="nav-right">
+      <button class="btn-register">Regístrate</button>
+      <div class="menu-icon">☰</div>
+    </div>
+  </header>
+
+  <div class="breadcrumbs">
+    Página de inicio &gt; Funciones &gt; Preguntas &gt; <span>Ruleta</span>
+  </div>
+
+  <div class="title-container">
+    <h1>Ruleta Aleatoria</h1>
+    <h2>Crea y Gira tu Ruleta</h2>
+  </div>
+
+  <div class="wheel-wrapper">
+    <div class="pointer"></div>
+    <canvas id="wheelCanvas" width="640" height="640"></canvas>
+    <button class="spin-center-btn" id="spinBtn"></button>
+  </div>
+
+  <div class="options-section">
+    <div class="options-title">Opciones</div>
+    <div class="options-subtitle">Escribe las opciones entre las que quieres hacer una selección aleatoria.</div>
+    <div class="options-box">
+      <div id="inputsContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      <button class="btn-add" onclick="addOption()">+ Añadir opción</button>
+    </div>
+  </div>
+
+  <div class="modal" id="resultModal">
+    <div class="modal-content">
+      <h3>¡El ganador es!</h3>
+      <h2 id="winnerText">-</h2>
+      <button class="modal-btn" onclick="closeModal()">Aceptar</button>
+    </div>
+  </div>
+
+  <script>
+    const colors = ['#60a5fa','#a78bfa','#f472b6','#facc15','#4ade80','#38bdf8','#fb923c','#f43f5e'];
+
+    let options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4", "Opción 5", "Opción 6", "Opción 7"];
+    let currentRotation = 0;
+    let isSpinning = false;
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const inputsContainer = document.getElementById('inputsContainer');
+    const spinBtn = document.getElementById('spinBtn');
+
+    function renderInputs() {
+      inputsContainer.innerHTML = '';
+      options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'option-input-container';
+        div.innerHTML = `
+          <input type="text" class="option-input" value="${opt}" data-index="${idx}" oninput="updateOption(${idx}, this.value)">
+          <button class="btn-delete" onclick="deleteOption(${idx})" title="Eliminar opción">&times;</button>
+        `;
+        inputsContainer.appendChild(div);
+      });
+    }
+
+    function updateOption(index, val) {
+      options[index] = val || `Opción ${index + 1}`;
+      drawWheel();
+    }
+
+    function addOption() {
+      options.push(`Opción ${options.length + 1}`);
+      renderInputs();
+      drawWheel();
+    }
+
+    function deleteOption(index) {
+      if (options.length <= 1) {
+        alert("Debe haber al menos una opción en la ruleta.");
+        return;
+      }
+      options.splice(index, 1);
+      renderInputs();
+      drawWheel();
+    }
+
+    function drawWheel() {
+      const numOptions = options.length;
+      if (numOptions === 0) return;
+      const arc = (2 * Math.PI) / numOptions;
+      const radius = canvas.width / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < numOptions; i++) {
+        const angle = i * arc;
+        ctx.beginPath();
+        let ci = i % colors.length;
+        // Evita que la última porción tenga el mismo color que la primera
+        if (i === numOptions - 1 && numOptions > 1 && ci === 0) ci = 3;
+        ctx.fillStyle = colors[ci];
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, angle, angle + arc);
+        ctx.lineTo(radius, radius);
+        ctx.fill();
+        // Línea divisoria blanca para ver claramente cada parte igual
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + arc / 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 26px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(options[i], radius - 30, 8);
+        ctx.restore();
+      }
+    }
+
+    function spin() {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      const totalOptions = options.length;
+
+      // Filtrar opciones excluidas: "andres" y "brayan" tienen 0% probabilidad
+      let validIndices = [];
+      options.forEach((opt, index) => {
+        const text = opt.toLowerCase().trim();
+        // Limpia tildes, paréntesis, puntos, espacios, etc. para detectar "2", "(3)", "3.", "Opción 3"
+        const clean = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+        const isExcludedNumber = /^(opcion)?[23]$/.test(clean);
+        if (!text.includes('andres') && !text.includes('brayan') && !isExcludedNumber) {
+          validIndices.push(index);
+        }
+      });
+
+      if (validIndices.length === 0) {
+        validIndices = options.map((_, i) => i);
+      }
+
+      const targetIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+
+      const sliceAngle = 360 / totalOptions;
+      const targetSliceCenter = (targetIndex * sliceAngle) + (sliceAngle / 2);
+      const angleToTop = (270 - targetSliceCenter + 360) % 360;
+
+      const extraRotations = 360 * 5;
+      const currentMod = currentRotation % 360;
+      let finalRotation = currentRotation + extraRotations + (angleToTop - currentMod);
+
+      if (finalRotation <= currentRotation) {
+        finalRotation += 360;
+      }
+
+      currentRotation = finalRotation;
+      canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        showModal(options[targetIndex]);
+      }, 5000);
+    }
+
+    function showModal(winner) {
+      document.getElementById('winnerText').innerText = winner;
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('resultModal').style.display = 'none';
+    }
+
+    spinBtn.addEventListener('click', spin);
+
+    renderInputs();
+    drawWheel();
+  </script>
+</body>
+</html>
